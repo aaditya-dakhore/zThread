@@ -5,6 +5,13 @@ All notable changes to zThread will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- `LinuxRuntimeFactory` now fails fast with a `ConfigurationException` on CPU
+  architectures other than x86_64, instead of silently relying on x86_64-only
+  native struct layouts (`Platform.ensureSupportedArchitecture()`)
+
 ## [Released]
 
 ### Added
