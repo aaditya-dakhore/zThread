@@ -34,6 +34,7 @@ public final class LinuxRuntimeFactory implements ZRuntimeFactory {
    */
   public LinuxRuntimeFactory() {
     Platform.ensureLinux();
+    Platform.ensureSupportedArchitecture();
   }
 
   @Override

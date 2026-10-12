@@ -78,4 +78,43 @@ public final class Platform {
           "zThread requires Linux. Current OS: " + System.getProperty("os.name"));
     }
   }
+
+  /**
+   * Verifies that the current CPU architecture has a native struct layout that
+   * zThread has actually verified, and throws if not.
+   *
+   * <p>{@code StructLayouts} in {@code zthread-linux} encodes the x86_64 kernel
+   * ABI for structs such as {@code epoll_event} — packed to 12 bytes on x86_64,
+   * but padded to 16 bytes on other 64-bit architectures (the Linux kernel's own
+   * {@code eventpoll.h} applies the packed attribute only when compiling for
+   * {@code __x86_64__}). Without this check, running on an unverified
+   * architecture would silently misread those structs — including via raw
+   * kernel writes that bypass the FFM API's own bounds checking — instead of
+   * failing loudly.
+   *
+   * @throws ConfigurationException if the current architecture is not x86_64
+   */
+  public static void ensureSupportedArchitecture() {
+    ensureSupportedArchitecture(OS_ARCH);
+  }
+
+  /**
+   * Package-private overload so tests can exercise both the supported and
+   * unsupported branches without needing to run on more than one physical
+   * architecture.
+   *
+   * @param osArch the architecture string to check, in the same form as {@link #OS_ARCH}
+   * @throws ConfigurationException if {@code osArch} is not a supported architecture
+   */
+  static void ensureSupportedArchitecture(String osArch) {
+    boolean supported = osArch.contains("amd64") || osArch.contains("x86_64");
+    if (!supported) {
+      throw new ConfigurationException(
+          "zThread's Linux native layer only has a verified struct layout for "
+              + "x86_64. Detected architecture: " + osArch + ". Running on an "
+              + "unverified architecture risks silent memory corruption rather "
+              + "than a clean failure — please open an issue if you need "
+              + "support for this architecture.");
+    }
+  }
 }
